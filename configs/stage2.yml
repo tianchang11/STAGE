@@ -1,0 +1,78 @@
+# Paper-aligned Stage II configuration.
+# SGD, LR=6e-4, 180 epochs, batch size 64, and alpha=1.
+# Run example:
+#   CUDA_VISIBLE_DEVICES=0 python train_stage2.py \
+#     --config_file configs/stage2.yml \
+#     --stage1-ckpt logs/stage1/transformer_180.pth \
+#     MODEL.DIST_TRAIN False MODEL.DEVICE_ID "('0')"
+MODEL:
+  PRETRAIN_CHOICE: 'clip'
+  PRETRAIN_PATH: 'weights/XXX.pth'
+  METRIC_LOSS_TYPE: 'triplet'
+  IF_LABELSMOOTH: 'off'
+  IF_WITH_CENTER: 'no'
+  NAME: 'transformer'
+  NO_MARGIN: True
+  DEVICE_ID: ('0')
+  DIST_TRAIN: False
+  TRANSFORMER_TYPE: 'vit_base_patch16_224_TransOSS'
+  STRIDE_SIZE: [16, 16]
+  MIE: True
+  MIE_COE: 1.0
+  MIE_POSITION: 'late'
+  SSE: False
+  PAIR: False
+  STAGE: 2
+  DROP_PATH: 0.1
+  LGDR_RETENTION_RATIO: 0.75
+  CROSS_ATTENTION_LAYERS: 1
+  PATCH_LAYER_GROUP: 'early'
+  SGE_SCALES: [1, 3, 5]
+  SGE_REDUCED_DIM: 512
+  ID_LOSS_WEIGHT: 1.0
+  TRIPLET_LOSS_WEIGHT: 1.0
+  SEMANTIC_REGULARIZATION_WEIGHT: 1.0
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: ('HOSS')
+  ROOT_DIR: ('./')
+
+DATALOADER:
+  SAMPLER: 'softmax_triplet'
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: 'SGD'
+  MAX_EPOCHS: 180
+  BASE_LR: 0.0006
+  IMS_PER_BATCH: 64
+  WARMUP_METHOD: 'linear'
+  WARMUP_EPOCHS: 5
+  LARGE_FC_LR: False
+  CHECKPOINT_PERIOD: 10
+  LOG_PERIOD: 80
+  EVAL_PERIOD: 5
+  WEIGHT_DECAY: 0.0001
+  WEIGHT_DECAY_BIAS: 0.0001
+  BIAS_LR_FACTOR: 2
+  SEED: 1234
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 64
+  RE_RANKING: False
+  WEIGHT: ''
+  NECK_FEAT: 'before'
+  FEAT_NORM: 'yes'
+
+OUTPUT_DIR: './logs/stage2'
